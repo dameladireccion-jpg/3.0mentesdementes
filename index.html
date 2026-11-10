@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mentes Dementes 3.0 - Automatización de Campañas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cream: '#E6DEC8',
+                        mountain: '#2E5A27',
+                        ocher: '#D98A29',
+                        carbon: '#1C1917',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-carbon text-cream min-h-screen font-sans antialiased pb-12">
+
+    <!-- Header Principal -->
+    <header class="bg-carbon border-b border-ocher/30 sticky top-0 z-50 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-mountain flex items-center justify-center font-bold text-cream text-xl border border-ocher">3.0</div>
+                <div>
+                    <h1 class="text-xl font-extrabold tracking-wider text-cream">MENTES DEMENTES <span class="text-ocher">3.0</span></h1>
+                    <p class="text-xs text-cream/70">Gestión de Rutas y Campañas Automáticas</p>
+                </div>
+            </div>
+            
+            <!-- Navegación de Pestañas -->
+            <div class="flex bg-carbon border border-ocher/40 rounded-xl p-1 gap-1">
+                <button onclick="switchTab('campaign')" id="tab-campaign" class="px-4 py-2 rounded-lg text-sm font-bold transition-all bg-mountain text-cream shadow">Generar Campaña</button>
+                <button onclick="switchTab('members')" id="tab-members" class="px-4 py-2 rounded-lg text-sm font-bold transition-all text-cream/70 hover:text-cream">Miembros (<span id="member-count">0</span>)</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-6">
+
+        <!-- ================= PESTAÑA: CAMPAÑA ================= -->
+        <div id="section-campaign" class="space-y-6">
+            
+            <!-- Selector de Ruta y Semana -->
+            <div class="bg-carbon border border-ocher/30 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-mountain/10 rounded-full blur-2xl pointer-events-none"></div>
+                
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 pb-4 border-b border-ocher/20">
+                    <div>
+                        <span class="text-xs uppercase tracking-widest text-ocher font-bold">Ciclo Actual</span>
+                        <h2 class="text-2xl font-black text-cream flex items-center gap-2">Semana <span id="display-week" class="text-ocher">1</span></h2>
+                    </div>
+                    <div class="flex items-center gap-3 bg-carbon/80 border border-ocher/30 px-4 py-2 rounded-xl">
+                        <span class="text-sm text-cream/80 font-medium">Próxima Ruta Destacada:</span>
+                        <select id="route-select" onchange="updateCampaign()" class="bg-carbon border border-ocher text-cream font-bold rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-ocher">
+                            <option value="Chelva">Chelva (Túneles de la Olla y Acueducto)</option>
+                            <option value="Chulilla">Chulilla (Puentes Colgantes y Hoces del Turia)</option>
+                            <option value="Chella">Chella (Salto de Agua y Gesta)</option>
+                            <option value="Quesa">Quesa (Cascadas y pozas de los Siete Gigantes)</option>
+                            <option value="Navajas">Navajas (Salto de la Novia y Ruta de las Fuentes)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Bloque Secuencial de WhatsApp 1 a 1 -->
+                <div class="bg-mountain/20 border border-mountain rounded-xl p-5 mb-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-3">
+                        <div>
+                            <span class="text-xs uppercase tracking-widest text-mountain font-bold bg-mountain/30 px-2.5 py-1 rounded-full">Difusión 1 a 1 Automatizada</span>
+                            <h3 class="text-lg font-bold text-cream mt-1" id="next-client-title">Siguiente cliente por contactar</h3>
+                        </div>
+                        <div class="text-sm bg-carbon px-3 py-1.5 rounded-lg border border-ocher/30 text-cream/80">
+                            Progreso: <span id="dispatch-progress" class="font-bold text-ocher">0 / 0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-carbon/90 rounded-xl p-4 border border-ocher/20 mb-4">
+                        <p id="preview-personal-msg" class="text-sm text-cream/90 italic whitespace-pre-line">Cargando mensaje personalizado...</p>
+                    </div>
+
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="sendCurrentAndNext()" class="flex-1 bg-mountain hover:bg-mountain/80 text-cream font-bold py-3 px-6 rounded-xl transition shadow-lg flex items-center justify-center gap-2 border border-ocher/40">
+                            <span>🚀 Enviar por WhatsApp y Pasar al Siguiente</span>
+                        </button>
+                        <button onclick="skipCurrentClient()" class="bg-carbon hover:bg-carbon/80 text-cream/70 hover:text-cream font-medium py-3 px-4 rounded-xl transition border border-ocher/30 text-sm">
+                            Saltar este
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Grid de Contenidos Generados -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    
+                    <!-- 1. Post Instagram -->
+                    <div class="bg-carbon/60 border border-ocher/30 rounded-xl p-5 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-xs font-bold text-ocher uppercase tracking-wider">1. Post Instagram</span>
+                                <button onclick="copyToClipboard('text-instagram')" class="text-xs bg-ocher/20 hover:bg-ocher text-cream px-2.5 py-1 rounded-lg transition border border-ocher/40 font-bold">Copiar</button>
+                            </div>
+                            <div id="text-instagram" class="text-xs text-cream/90 bg-carbon p-3 rounded-lg border border-ocher/20 h-48 overflow-y-auto whitespace-pre-line"></div>
+                        </div>
+                        <div class="mt-4 text-[11px] text-cream/50 italic">Optimizado para alta conversión y llamada a la acción.</div>
+                    </div>
+
+                    <!-- 2. Mensaje Grupo WhatsApp -->
+                    <div class="bg-carbon/60 border border-ocher/30 rounded-xl p-5 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-xs font-bold text-ocher uppercase tracking-wider">2. Grupo WhatsApp</span>
+                                <button onclick="copyToClipboard('text-whatsapp')" class="text-xs bg-ocher/20 hover:bg-ocher text-cream px-2.5 py-1 rounded-lg transition border border-ocher/40 font-bold">Copiar</button>
+                            </div>
+                            <div id="text-whatsapp" class="text-xs text-cream/90 bg-carbon p-3 rounded-lg border border-ocher/20 h-48 overflow-y-auto whitespace-pre-line"></div>
+                        </div>
+                        <div class="mt-4 text-[11px] text-cream/50 italic">Incluye enlace directo a perfil y llamada al grupo.</div>
+                    </div>
+
+                    <!-- 3. Prompt Maestro de la Semana -->
+                    <div class="bg-carbon/60 border border-ocher/30 rounded-xl p-5 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-xs font-bold text-ocher uppercase tracking-wider">3. Prompt Maestro IA</span>
+                                <button onclick="copyToClipboard('text-prompt')" class="text-xs bg-ocher hover:bg-ocher/80 text-carbon font-extrabold px-2.5 py-1 rounded-lg transition">Copiar Prompt</button>
+                            </div>
+                            <div id="text-prompt" class="text-xs text-cream/90 bg-carbon p-3 rounded-lg border border-ocher/20 h-48 overflow-y-auto font-mono"></div>
+                        </div>
+                        <div class="mt-4 text-[11px] text-cream/50 italic">Conserva colores oficiales (#E6DEC8, #2E5A27, #D98A29, #1C1917) y emblema.</div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PESTAÑA: MIEMBROS ================= -->
+        <div id="section-members" class="space-y-6 hidden">
+            <div class="bg-carbon border border-ocher/30 rounded-2xl p-6 shadow-xl">
+                
+                <!-- Barra de Herramientas de Miembros -->
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6 pb-4 border-b border-ocher/20">
+                    <div>
+                        <h2 class="text-2xl font-black text-cream">Gestión de Miembros</h2>
+                        <p class="text-xs text-cream/70">Control de asistencia, estados y ciclos de inactividad</p>
+                    </div>
+
+                    <!-- Botones de Gestión de Semana (Ahora aquí) -->
+                    <div class="flex items-center gap-2 bg-carbon/80 border border-ocher/40 px-3 py-1.5 rounded-xl">
+                        <span class="text-xs text-cream/70 font-bold">Semana (<span id="week-display-members">1</span>):</span>
+                        <button onclick="adjustWeek(-1)" class="bg-carbon hover:bg-carbon/80 text-cream px-3 py-1 rounded-lg text-xs font-bold border border-ocher/30 transition">Corregir (-1)</button>
+                        <button onclick="adjustWeek(1)" class="bg-mountain hover:bg-mountain/80 text-cream px-3 py-1 rounded-lg text-xs font-bold transition shadow">Siguiente (+1)</button>
+                    </div>
+                </div>
+
+                <!-- Filtros y Formulario de Alta -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                    <div class="lg:col-span-2 flex flex-wrap items-center gap-2">
+                        <button onclick="filterMembers('all')" id="filter-btn-all" class="px-4 py-2 rounded-xl text-xs font-bold bg-ocher text-carbon transition">Todos</button>
+                        <button onclick="filterMembers('active')" id="filter-btn-active" class="px-4 py-2 rounded-xl text-xs font-bold bg-carbon border border-ocher/30 text-cream/80 hover:text-cream transition">Activos</button>
+                        <button onclick="filterMembers('inactive')" id="filter-btn-inactive" class="px-4 py-2 rounded-xl text-xs font-bold bg-carbon border border-ocher/30 text-cream/80 hover:text-cream transition">Inactivos</button>
+                        <button onclick="filterMembers('suspended')" id="filter-btn-suspended" class="px-4 py-2 rounded-xl text-xs font-bold bg-carbon border border-ocher/30 text-cream/80 hover:text-cream transition">Suspendidos</button>
+                        <button onclick="clearSuspended()" class="px-3 py-2 rounded-xl text-xs font-bold bg-red-900/40 hover:bg-red-900 text-red-200 border border-red-700/50 transition ml-auto">Borrar Suspendidos</button>
+                    </div>
+
+                    <!-- Añadir Miembro Rápido -->
+                    <div class="flex gap-2">
+                        <input type="text" id="new-member-name" placeholder="Nombre del miembro..." class="flex-1 bg-carbon border border-ocher/40 rounded-xl px-3 py-2 text-sm text-cream focus:outline-none focus:ring-2 focus:ring-ocher">
+                        <input type="text" id="new-member-phone" placeholder="Teléfono..." class="w-32 bg-carbon border border-ocher/40 rounded-xl px-3 py-2 text-sm text-cream focus:outline-none focus:ring-2 focus:ring-ocher">
+                        <button onclick="addNewMember()" class="bg-mountain hover:bg-mountain/80 text-cream px-4 py-2 rounded-xl text-sm font-bold transition shadow border border-ocher/40">Añadir</button>
+                    </div>
+                </div>
+
+                <!-- Tabla de Miembros -->
+                <div class="overflow-x-auto rounded-xl border border-ocher/20">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-carbon/90 border-b border-ocher/30 text-xs uppercase text-ocher font-bold">
+                                <th class="p-3">Nombre</th>
+                                <th class="p-3">Teléfono</th>
+                                <th class="p-3">Estado</th>
+                                <th class="p-3 text-center">Inactividad</th>
+                                <th class="p-3 text-right">Acciones de Seguimiento</th>
+                            </tr>
+                        </thead>
+                        <tbody id="members-table-body" class="divide-y divide-ocher/10 text-sm">
+                            <!-- Inyectado por JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Notificación Toast -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-mountain text-cream px-6 py-3 rounded-xl shadow-2xl border border-ocher transform translate-y-32 opacity-0 transition-all duration-300 z-50 font-bold text-sm flex items-center gap-2">
+        <span>✨</span> <span id="toast-msg">Acción completada</span>
+    </div>
+
+    <!-- Script de la Aplicación -->
+    <script>
+        let currentWeek = 1;
+        let currentFilter = 'all';
+        let currentDispatchIndex = 0;
+
+        let members = [
+            { id: 1, name: 'Carlos Martínez', phone: '611223344', status: 'active', inactiveWeeks: 0 },
+            { id: 2, name: 'Laura Gómez', phone: '622334455', status: 'active', inactiveWeeks: 0 },
+            { id: 3, name: 'Sergio Ruiz', phone: '633445566', status: 'inactive', inactiveWeeks: 1 },
+            { id: 4, name: 'Marta Blasco', phone: '644556677', status: 'suspended', inactiveWeeks: 3 }
+        ];
+
+        const routesData = {
+            Chelva: {
+                title: "Ruta del Agua en Chelva",
+                highlights: "el impresionante cañón del río Chelva, los túneles excavados en la roca y el histórico acueducto romano de Peña Cortada",
+                duration: "3 horas (Nivel Fácil)"
+            },
+            Chulilla: {
+                title: "Hoces del Turia y Puentes Colgantes",
+                highlights: "los vértigos de los puentes colgantes sobre el río Turia, los cañones verticales de más de 80 metros y el Charco Azul",
+                duration: "4 horas (Nivel Moderado)"
+            },
+            Chella: {
+                title: "Salto de Chella y Ruta del Río",
+                highlights: "la majestuosa cascada del Salto de Chella, el mirador del Lobo y los rincones fluviales escondidos",
+                duration: "3.5 horas (Nivel Fácil)"
+            },
+            Quesa: {
+                title: "Los Siete Gigantes de Quesa",
+                highlights: "las pozas naturales cristalinas de los Siete Gigantes y las cascadas ocultas entre barrancos",
+                duration: "4 horas (Nivel Moderado)"
+            },
+            Navajas: {
+                title: "Salto de la Novia y Fuentes de Navajas",
+                highlights: "la emblemática cascada de 60 metros del Salto de la Novia y el paraje natural de la Fuente de la Esperanza",
+                duration: "2.5 horas (Nivel Fácil)"
+            }
+        };
+
+        function initApp() {
+            loadAppState();
+            updateCampaign();
+            renderMembers();
+        }
+
+        function loadAppState() {
+            const savedWeek = localStorage.getItem('md_current_week');
+            if (savedWeek) currentWeek = parseInt(savedWeek);
+
+            const savedMembers = localStorage.getItem('md_members');
+            if (savedMembers) {
+                try { members = JSON.parse(savedMembers); } catch(e){}
+            }
+        }
+
+        function persistAppState() {
+            localStorage.setItem('md_current_week', currentWeek);
+            localStorage.setItem('md_members', JSON.stringify(members));
+        }
+
+        function switchTab(tab) {
+            document.getElementById('section-campaign').classList.toggle('hidden', tab !== 'campaign');
+            document.getElementById('section-members').classList.toggle('hidden', tab !== 'members');
+            
+            document.getElementById('tab-campaign').className = tab === 'campaign' ? 'px-4 py-2 rounded-lg text-sm font-bold transition-all bg-mountain text-cream shadow' : 'px-4 py-2 rounded-lg text-sm font-bold transition-all text-cream/70 hover:text-cream';
+            document.getElementById('tab-members').className = tab === 'members' ? 'px-4 py-2 rounded-lg text-sm font-bold transition-all bg-mountain text-cream shadow' : 'px-4 py-2 rounded-lg text-sm font-bold transition-all text-cream/70 hover:text-cream';
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            toast.classList.remove('translate-y-32', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-32', 'opacity-0');
+            }, 3000);
+        }
+
+        function copyToClipboard(elementId) {
+            const text = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('¡Texto copiado al portapapeles!');
+            });
+        }
+
+        function updateCampaign() {
+            const routeKey = document.getElementById('route-select').value;
+            const r = routesData[routeKey];
+
+            document.getElementById('display-week').innerText = currentWeek;
+            document.getElementById('week-display-members').innerText = currentWeek;
+            document.getElementById('member-count').innerText = members.length;
+
+            // 1. Post Instagram
+            const igText = `🌲⛰️ ¡NUEVA RUTA MENTES DEMENTES 3.0! ⛰️🌲\n\n` +
+                `Esta semana nos vamos a descubrir ${r.highlights}. Una experiencia inmersiva en plena naturaleza valenciana diseñada para desconectar del asfalto y conectar con el grupo.\n\n` +
+                `📍 Destino: ${r.title}\n` + `⏱️ Duración: ${r.duration}\n\n` +
+                `📲 Escríbenos por WhatsApp al 614 40 16 56 para reservar tu plaza y unirte a nuestra tribu libre.\n\n` +
+                `#MentesDementes3.0 #SenderismoValencia #${routeKey} #TribuLibre #NaturalezaViva`;
+            document.getElementById('text-instagram').innerText = igText;
+
+            // 2. Mensaje Grupo WhatsApp (termina con el enlace real solicitado)
+            const groupText = `🔥 ¡AVISO DE RUTA SEMANAL - MENTES DEMENTES 3.0! 🔥\n\n` +
+                `Equipo, ya tenemos preparada la próxima aventura. Esta semana exploraremos ${r.highlights}. ¡${r.title} nos espera con su energía única!\n\n` +
+                `Duración estimada: ${r.duration}.\n\n` +
+                `Plazas limitadas. ¡Escríbeme por privado al 614 40 16 56 para confirmar asistencia!\n\n` +
+                `Echa un vistazo a los detalles en nuestro Instagram oficial: https://www.instagram.com/3.0mentesdementes?mdxt=aDB4emZhdXFxMHRp`;
+            document.getElementById('text-whatsapp').innerText = groupText;
+
+            // 3. Prompt Maestro IA
+            const promptText = `A cinematic, highly detailed vertical photo of outdoor hikers exploring ${r.highlights}. Brand color palette strictly enforced: Soft Cream (#E6DEC8), Deep Mountain Green (#2E5A27), Rich Ocher/Gold (#D98A29), and Carbon Dark (#1C1917). At the top of the image, incorporate a sleek 3D embossed brand emblem. At the bottom, a rustic dark wooden trail sign bearing the inscription "MENTES DEMENTES 3.0". Natural lighting, sun filtering through trees, vibrant hiking gear, hyper-realistic, professional photography, zero cars, zero roads, pure wilderness.`;
+            document.getElementById('text-prompt').innerText = promptText;
+
+            updateDispatchPreview();
+        }
+
+        function getActiveEligibleMembers() {
+            return members.filter(m => m.status !== 'suspended');
+        }
+
+        function updateDispatchPreview() {
+            const activeList = getActiveEligibleMembers();
+            const progressEl = document.getElementById('dispatch-progress');
+            const titleEl = document.getElementById('next-client-title');
+            const previewEl = document.getElementById('preview-personal-msg');
+
+            if (activeList.length === 0) {
+                progressEl.innerText = `0 / 0`;
+                titleEl.innerText = `No hay miembros activos`;
+                previewEl.innerText = `Añade miembros o cambia filtros para comenzar la difusión.`;
+                return;
+            }
+
+            if (currentDispatchIndex >= activeList.length) {
+                currentDispatchIndex = 0;
+            }
+
+            const currentMember = activeList[currentDispatchIndex];
+            progressEl.innerText = `${currentDispatchIndex + 1} /${activeList.length}`;
+            titleEl.innerText = `Contactando a: ${currentMember.name} (${currentMember.phone})`;  const routeKey = document.getElementById('route-select').value; const r = routesData[routeKey]; const msg = `¡Hola ${currentMember.name}! 👋 Soy de Mentes Dementes 3.0. Esta semana nos vamos a ${r.title} (${r.highlights}). ¿Te vienes a la aventura? Avísame para reservarte hueco. ⛰️`;
+            previewEl.innerText = msg;
+        }
+
+        function sendCurrentAndNext() {
+            const activeList = getActiveEligibleMembers();
+            if (activeList.length === 0) {
+                showToast('No hay miembros para enviar.');
+                return;
+            }
+
+            const currentMember = activeList[currentDispatchIndex];
+            const routeKey = document.getElementById('route-select').value;
+            const r = routesData[routeKey];
+            const msg = encodeURIComponent(`¡Hola ${currentMember.name}! 👋 Soy de Mentes Dementes 3.0. Esta semana nos vamos a ${r.title} (${r.highlights}). ¿Te vienes a la aventura? Avísame para reservarte hueco. ⛰️`);
+            
+            window.open(`https://wa.me/34${currentMember.phone}?text=${msg}`, '_blank');
+
+            // Actualizar estado a activo / respondido
+            currentMember.status = 'active';
+            currentMember.inactiveWeeks = 0;
+            persistAppState();
+
+            currentDispatchIndex = (currentDispatchIndex + 1) % activeList.length;
+            updateDispatchPreview();
+            renderMembers();
+            showToast(`Mensaje enviado a ${currentMember.name}`);
+        }
+
+        function skipCurrentClient() {
+            const activeList = getActiveEligibleMembers();
+            if (activeList.length === 0) return;
+            currentDispatchIndex = (currentDispatchIndex + 1) % activeList.length;
+            updateDispatchPreview();
+            showToast('Cliente saltado');
+        }
+
+        function adjustWeek(amount) {
+            currentWeek += amount;
+            if (currentWeek < 1) currentWeek = 1;
+
+            if (amount > 0) {
+                // Avanzar semana: incrementar inactividad de los inactivos
+                members.forEach(m => {
+                    if (m.status === 'inactive') {
+                        m.inactiveWeeks = (m.inactiveWeeks || 0) + 1;
+                        if (m.inactiveWeeks >= 3) {
+                            m.status = 'suspended';
+                        }
+                    } else if (m.status === 'active') {
+                        // Pasar a inactivo si no respondieron o ciclo nuevo
+                        m.status = 'inactive';
+                        m.inactiveWeeks = 1;
+                    }
+                });
+            } else {
+                // Retroceder semana (-1)
+                members.forEach(m => {
+                    if (m.inactiveWeeks > 0) m.inactiveWeeks--;
+                    if (m.inactiveWeeks === 0 && m.status === 'suspended') m.status = 'inactive';
+                    if (m.inactiveWeeks === 0 && m.status === 'inactive') m.status = 'active';
+                });
+            }
+
+            currentDispatchIndex = 0;
+            persistAppState();
+            updateCampaign();
+            renderMembers();
+            showToast(`Semana ajustada a ${currentWeek}`); }  function filterMembers(filter) { currentFilter = filter; ['all', 'active', 'inactive', 'suspended'].forEach(f => { const btn = document.getElementById(`filter-btn-${f}`);
+                if (btn) {
+                    btn.className = f === filter ? 'px-4 py-2 rounded-xl text-xs font-bold bg-ocher text-carbon transition' : 'px-4 py-2 rounded-xl text-xs font-bold bg-carbon border border-ocher/30 text-cream/80 hover:text-cream transition';
+                }
+            });
+            renderMembers();
+        }
+
+        function renderMembers() {
+            const tbody = document.getElementById('members-table-body');
+            tbody.innerHTML = '';
+
+            const filtered = members.filter(m => {
+                if (currentFilter === 'all') return true;
+                return m.status === currentFilter;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-cream/50">No hay miembros en esta categoría.</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(m => {
+                let badgeColor = 'bg-green-900/40 text-green-300 border-green-700/50';
+                let statusText = 'Activo';
+                if (m.status === 'inactive') {
+                    badgeColor = 'bg-yellow-900/40 text-yellow-300 border-yellow-700/50';
+                    statusText = 'Inactivo';
+                } else if (m.status === 'suspended') {
+                    badgeColor = 'bg-red-900/40 text-red-300 border-red-700/50';
+                    statusText = 'Suspendido';
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-carbon/60 transition border-b border-ocher/10';
+                tr.innerHTML = `
+                    <td class="p-3 font-medium text-cream">${m.name}</td>
+                    <td class="p-3 text-cream/80 font-mono text-xs">+34 ${m.phone}</td>
+                    <td class="p-3"><span class="px-2.5 py-1 rounded-full text-xs font-bold border ${badgeColor}">${statusText}</span></td>
+                    <td class="p-3 text-center font-bold text-ocher">${m.inactiveWeeks} sem</td>
+                    <td class="p-3 text-right space-x-1">
+                        <button onclick="sendIndividualWhatsApp(${m.id})" class="bg-mountain hover:bg-mountain/80 text-cream px-2.5 py-1.5 rounded-lg text-xs font-bold transition">WApp</button>
+                        <button onclick="setMemberStatus(${m.id}, 'active')" class="bg-carbon hover:bg-carbon/80 text-green-400 px-2.5 py-1.5 rounded-lg text-xs font-bold border border-green-700/40" title="Ha respondido">👍</button>
+                        <button onclick="setMemberStatus(${m.id}, 'inactive')" class="bg-carbon hover:bg-carbon/80 text-yellow-400 px-2.5 py-1.5 rounded-lg text-xs font-bold border border-yellow-700/40" title="Se lo pensará">🤔</button>
+                        <button onclick="editMember(${m.id})" class="bg-carbon hover:bg-carbon/80 text-cream/80 px-2.5 py-1.5 rounded-lg text-xs font-bold border border-ocher/30">Editar</button>
+                        <button onclick="deleteMember(${m.id})" class="bg-red-950/40 hover:bg-red-900 text-red-300 px-2.5 py-1.5 rounded-lg text-xs font-bold border border-red-800/40">Eliminar</button>
